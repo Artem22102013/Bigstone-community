@@ -43,12 +43,17 @@ export async function signIn(username: string, password: string) {
     throw new Error("Database connection not configured")
   }
 
-  const { data: user, error } = await supabase.from("users").select("*").eq("username", username).single()
+  const passwordHash = simpleHash(password);
+  const { data: user, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("username", username)
+    .eq("password_hash", passwordHash)
+    .single()
 
-  if (error || !user) throw new Error("Invalid credentials")
-
-  const isValid = simpleHash(password) === user.password_hash
-  if (!isValid) throw new Error("Invalid credentials")
+  if (error || !user) {
+    throw new Error("Invalid credentials")
+  }
 
   // Set session after successful signin
   sessionManager.setUser({
@@ -94,4 +99,78 @@ export async function resetPassword(userId: string, newPassword: string) {
 // Legacy function - keeping for compatibility but not used
 export async function requestPasswordReset(username: string, email: string) {
   return verifyUserForReset(username, email)
+}
+
+export async function signInWithDiscord() {
+  if (!supabase) {
+    throw new Error("Database connection not configured")
+  }
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'discord',
+    options: {
+      redirectTo: `${window.location.origin}/auth/signin`
+    }
+  })
+
+  if (error) throw error
+  return data
+}
+
+export async function handleOAuthCallback() {
+  if (!supabase) {
+    throw new Error("Database connection not configured")
+  }
+
+  const { data: { session }, error } = await supabase.auth.getSession()
+  
+  if (error) {
+    throw error
+  }
+
+  if (!session) {
+    return null
+  }
+  
+  supabase.auth.signOut()
+  if (!session?.user || !session.user.email) {
+    throw new Error("Oauth login failed")
+  }
+
+  const { data: existingUser } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", session.user.email)
+    .single()
+
+  if (existingUser) {
+    sessionManager.setUser({
+      id: existingUser.id,
+      username: existingUser.username,
+      email: existingUser.email,
+    })
+    return existingUser
+  }
+
+  const { data: newUser, error: insertError } = await supabase
+    .from("users")
+    .insert([{
+      username: session.user.user_metadata.full_name,
+      email: session.user.email,
+      password_hash: simpleHash(window.crypto.randomUUID()),
+    }])
+    .select()
+    .single()
+
+  if (insertError) {
+    throw insertError
+  }
+
+  sessionManager.setUser({
+    id: newUser.id,
+    username: newUser.username,
+    email: newUser.email,
+  })
+
+  return newUser
 }

@@ -2,15 +2,20 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, use } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { signIn } from "@/lib/auth"
+import { handleOAuthCallback, signIn, signInWithDiscord } from "@/lib/auth"
+import { Separator } from "../ui/separator"
+
+const errorCodeMap = {
+  access_denied: "Oauth access denied.",
+};
 
 export default function SignInForm() {
   const [formData, setFormData] = useState({
@@ -18,10 +23,27 @@ export default function SignInForm() {
     password: "",
   })
   const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [countdown, setCountdown] = useState(3)
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    handleOAuthCallback()
+      .then(async (user) => {
+        if (!user) {
+          return
+        }
+        router.push("/auth/welcome")
+      })
+      .catch((err: any) => {
+        setError(err.message || "Failed to complete OAuth login")
+      })
+
+    if (searchParams.get("error")) {
+      const errorCode = searchParams.get("error")
+      setError(errorCodeMap[errorCode as keyof typeof errorCodeMap] || "An unknown error occurred")
+    }
+  }, [router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +52,7 @@ export default function SignInForm() {
 
     try {
       await signIn(formData.username, formData.password)
-      setSuccess(true)
+      router.push("/auth/welcome")
     } catch (err: any) {
       setError(err.message || "Failed to sign in")
     } finally {
@@ -38,33 +60,19 @@ export default function SignInForm() {
     }
   }
 
-  useEffect(() => {
-    if (success && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1)
-      }, 1000)
-      return () => clearTimeout(timer)
-    } else if (success && countdown === 0) {
-      // Always go to dashboard after sign in
-      router.push("/dashboard")
-    }
-  }, [success, countdown, router])
+  const handleDiscordLogin = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
 
-  if (success) {
-    return (
-      <Card className="mx-auto max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl text-green-600">Welcome Back!</CardTitle>
-          <CardDescription>Redirecting you back in {countdown} seconds...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={() => router.push("/dashboard")} className="w-full">
-            Go to Dashboard
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
+    try {
+      await signInWithDiscord()
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in with Discord")
+    } finally {
+      setLoading(false)
+    }
+  };
 
   return (
     <Card className="mx-auto max-w-sm">
@@ -73,6 +81,13 @@ export default function SignInForm() {
         <CardDescription>Welcome back to the Bigstone community</CardDescription>
       </CardHeader>
       <CardContent>
+        <Button onClick={handleDiscordLogin} className="w-full" disabled={loading}>
+          <img src="https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/discord.svg" alt="Discord Icon" className="invert size-4 inline-block" />
+          Sign in with Discord
+        </Button>
+
+        <Separator className="my-4"/>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <Alert variant="destructive">
