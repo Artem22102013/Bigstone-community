@@ -50,9 +50,6 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="flex gap-3">
               <Button asChild className="flex-1">
-                <Link href="/auth/signup">Sign Up</Link>
-              </Button>
-              <Button asChild variant="outline" className="flex-1">
                 <Link href="/auth/signin">Sign In</Link>
               </Button>
             </CardContent>
