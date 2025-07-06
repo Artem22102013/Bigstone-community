@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -81,6 +81,12 @@ export default function SignInForm() {
         <CardDescription>Welcome back to the Bigstone community</CardDescription>
       </CardHeader>
       <CardContent>
+        {error && (
+          <Alert className="mb-4" variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <Button onClick={handleDiscordLogin} className="w-full" disabled={loading}>
           <img src="https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/discord.svg" alt="Discord Icon" className="invert size-4 inline-block" />
           Sign in with Discord
@@ -89,12 +95,6 @@ export default function SignInForm() {
         <Separator className="my-4"/>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
           <div className="space-y-2">
             <Label htmlFor="username">Discord Username</Label>
             <Input

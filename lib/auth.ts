@@ -132,7 +132,7 @@ export async function handleOAuthCallback() {
     return null
   }
   
-  supabase.auth.signOut()
+  await supabase.auth.signOut()
   if (!session?.user || !session.user.email) {
     throw new Error("Oauth login failed")
   }
