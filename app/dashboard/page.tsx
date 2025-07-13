@@ -21,9 +21,14 @@ export default function DashboardPage() {
 
   if (!user) return <p>Loading user info...</p>;
 
+  const rawName = user.user_metadata?.name || user.email || '';
+  const displayName = rawName.endsWith('#0') ? rawName.slice(0, -2) : rawName;
+
   return (
     <main className="p-6">
-      <h1 className="text-2xl font-bold">Congrats, {user.user_metadata?.name || user.email}, you got furthest anyone has in the maintenance mode!</h1>
+      <h1 className="text-2xl font-bold">
+        Congrats, {displayName}, you got furthest anyone has in the maintenance mode!
+      </h1>
       <button
         className="mt-4 bg-red-600 text-white px-4 py-2 rounded"
         onClick={async () => {
