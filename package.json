@@ -2,7 +2,7 @@
   "name": "bigstone",
   "scripts": {
     "build": "turbo run build",
-    "dev": "node dev",
+    "dev": "cd src/web && node dev",
     "lint": "turbo run lint",
     "check-types": "turbo run check-types"
   },
