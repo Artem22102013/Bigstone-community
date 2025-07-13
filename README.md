@@ -15,14 +15,9 @@ Install all dependencies:
 pnpm i
 ```
 
-Install web-only dependencies:
-```
-pnpm i --filter=web
-```
-
 Run the website:
 ```
-pnpm dev --filter=web
+pnpm dev
 ```
 
 ## Features
