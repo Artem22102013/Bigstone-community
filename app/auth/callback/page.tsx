@@ -8,25 +8,31 @@ export default function AuthCallback() {
   const router = useRouter();
 
   useEffect(() => {
-    const handleAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) throw error;
-        
-        if (session) {
-          router.push('/dashboard');
-        } else {
-          // If no session, redirect to login}
-          router.push('/login');
-        }
-      } catch (error) {
-        console.error('Authentication error:', error);
-        router.push('/login');
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error || !session) {
+        router.push('/auth/login');
+      } else {
+        router.push('/dashboard');
       }
     };
 
-    handleAuth();
+    checkSession();
+
+    // Optional: subscribe to auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        router.push('/dashboard');
+      }
+      if (event === 'SIGNED_OUT') {
+        router.push('/auth/login');
+      }
+    });
+
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
   }, [router]);
 
   return (
