@@ -2,10 +2,6 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const supabaseURL = 'https://ghxenimntsyqxpgrunfr.supabase.co/auth/v1/authorize';
-  const provider = 'discord';
-  const redirectTo = encodeURIComponent('https://community.bigstone.ovh/auth/callback'); // change for prod
-
-  const url = `${supabaseURL}?provider=${provider}&redirect_to=${redirectTo}`;
+  const url = `https://discord.com/oauth2/authorize?client_id=1391809353933127810&response_type=code&redirect_uri=https%3A%2F%2Fcommunity.bigstone.ovh%2Fauth%2Fcallback&scope=identify+email`;
   return NextResponse.redirect(url);
 }
