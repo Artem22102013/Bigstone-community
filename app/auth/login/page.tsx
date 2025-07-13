@@ -2,7 +2,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'   // ← make sure this points to your client‑side supabase instance
+import { supabase } from '../../../lib/supabaseClient'   // ← make sure this points to your client‑side supabase instance
 
 export default function LoginPage() {
   const router = useRouter()
