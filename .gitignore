@@ -24,6 +24,10 @@ coverage
 # Vercel
 .vercel
 
+# Supabase
+.supabase
+supabase
+
 # Build Outputs
 .next/
 out/
