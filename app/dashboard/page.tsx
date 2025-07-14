@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import type { User } from '@supabase/supabase-js';
+import { useUser } from '@/context/userContext';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
+  const { userAvatar, username } = useUser();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -38,6 +40,16 @@ export default function DashboardPage() {
       >
         Sign out
       </button>
+    <div className="p-4">
+      {userAvatar && (
+        <img
+          src={userAvatar}
+          alt="Discord Avatar"
+          className="w-16 h-16 rounded-full mb-2"
+        />
+      )}
+      <p className="text-lg">Hello, {username || "loading..."}</p>
+    </div>
     </main>
   );
 }
