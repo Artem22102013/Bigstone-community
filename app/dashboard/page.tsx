@@ -28,9 +28,14 @@ export default function DashboardPage() {
 
   return (
     <main className="p-6">
-      <h1 className="text-2xl font-bold">
-        Congrats, {displayName}, you got furthest anyone has in the maintenance mode!
-      </h1>
+      <p>Your displayName is: {displayName}</p>
+      <p>Your email is: {user.email}</p>
+      <p>Your ID is: {user.id}</p>
+      <p>Your username is: {username}</p>
+      <p>Your avatar is: 
+        <img src={userAvatar || '/default-avatar.png'} alt="User Avatar" className="w-16 h-16 rounded-full" />
+      </p>
+
       <button
         className="mt-4 bg-red-600 text-white px-4 py-2 rounded"
         onClick={async () => {
@@ -40,16 +45,6 @@ export default function DashboardPage() {
       >
         Sign out
       </button>
-    <div className="p-4">
-      {userAvatar && (
-        <img
-          src={userAvatar}
-          alt="Discord Avatar"
-          className="w-16 h-16 rounded-full mb-2"
-        />
-      )}
-      <p className="text-lg">Hello, {username || "loading..."}</p>
-    </div>
     </main>
   );
 }
